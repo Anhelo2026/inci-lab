@@ -1,0 +1,911 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>INCI Lab · IBISA</title>
+<style>
+:root{
+  --bg:#140F1F; --bg2:#1B1430; --panel:#211836; --panel2:#281D45;
+  --line:#3A2C5C; --line2:#4A3A70;
+  --ink:#EDE9FE; --ink-dim:#B9AEDD; --ink-faint:#8877B5;
+  --viol:#A78BFA; --viol-deep:#7C3AED; --mag:#E879F9; --mag-deep:#C026D3;
+  --ok:#34D399; --ok-bg:#0E3A2E; --warn:#FBBF24; --warn-bg:#3A2E0C; --bad:#FB7185; --bad-bg:#3A1420;
+  --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+  --ui:system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --r:10px; --r-lg:16px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:linear-gradient(180deg,#140F1F,#100B1A 60%);color:var(--ink);font-family:var(--ui);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit}
+a{color:var(--viol)}
+
+/* ---------- Header ---------- */
+header.app{
+  display:flex;align-items:center;gap:14px;padding:12px 20px;
+  background:linear-gradient(90deg,#F2EEFF,#EDE4FB);
+  border-bottom:1px solid #DED3F5;position:sticky;top:0;z-index:40;
+}
+.logo{width:38px;height:38px;border-radius:10px;flex:none;
+  background:conic-gradient(from 210deg,#7C3AED,#C026D3,#E879F9,#7C3AED);
+  display:grid;place-items:center;color:#fff;font-weight:800;font-size:19px;
+  box-shadow:0 2px 10px rgba(124,58,237,.35);letter-spacing:-1px}
+.brandwrap{display:flex;flex-direction:column;line-height:1.15}
+.brand{color:#3A2A5C;font-weight:800;font-size:17px;letter-spacing:-.2px}
+.brand small{color:#7A5AA8;font-weight:600}
+.appname{color:#5B3E96;font-weight:700;font-size:13px}
+.build{margin-left:auto;display:flex;align-items:center;gap:10px}
+.badge{font-family:var(--mono);font-size:11px;color:#5B3E96;background:#fff;
+  border:1px solid #DDD0F2;border-radius:999px;padding:5px 11px;font-weight:600}
+.badge b{color:#7C3AED}
+.seal-pill{font-size:11px;font-weight:700;color:#6B4AA6;background:#fff;border:1px solid #DDD0F2;border-radius:999px;padding:5px 11px}
+
+/* ---------- Tabs ---------- */
+nav.tabs{display:flex;gap:2px;padding:0 16px;background:var(--bg2);border-bottom:1px solid var(--line);position:sticky;top:62px;z-index:30;overflow-x:auto}
+nav.tabs button{
+  background:none;border:none;color:var(--ink-faint);padding:13px 16px;font-size:13.5px;font-weight:600;
+  border-bottom:2px solid transparent;white-space:nowrap;position:relative;letter-spacing:.1px}
+nav.tabs button:hover{color:var(--ink-dim)}
+nav.tabs button.on{color:var(--ink);border-bottom-color:var(--mag)}
+nav.tabs button .count{display:inline-block;min-width:18px;padding:1px 6px;margin-left:6px;border-radius:999px;
+  background:var(--viol-deep);color:#fff;font-size:11px;font-family:var(--mono);vertical-align:middle}
+nav.tabs button.on .count{background:var(--mag-deep)}
+
+main{max-width:1180px;margin:0 auto;padding:22px 20px 80px}
+.view{display:none}
+.view.on{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+h2.title{font-size:20px;margin:.2em 0 .1em;letter-spacing:-.3px}
+.sub{color:var(--ink-dim);font-size:13.5px;margin:0 0 18px}
+.sub code{font-family:var(--mono);background:var(--panel);padding:1px 6px;border-radius:5px;color:var(--viol);font-size:12px}
+
+/* ---------- Cards / panels ---------- */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px}
+.card+.card{margin-top:16px}
+.drop{
+  border:1.5px dashed var(--line2);border-radius:var(--r-lg);padding:34px 24px;text-align:center;
+  background:var(--panel);transition:.15s;cursor:pointer}
+.drop:hover,.drop.hot{border-color:var(--mag);background:var(--panel2)}
+.drop h3{margin:.4em 0 .2em;font-size:16px}
+.drop p{color:var(--ink-dim);font-size:13px;margin:.2em 0}
+.drop .big{font-size:30px}
+
+.btn{background:var(--viol-deep);color:#fff;border:none;border-radius:var(--r);padding:10px 16px;font-weight:700;font-size:13.5px;transition:.12s}
+.btn:hover{background:#8B4DF0}
+.btn.mag{background:linear-gradient(90deg,var(--mag-deep),var(--viol-deep))}
+.btn.mag:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;border:1px solid var(--line2);color:var(--ink-dim)}
+.btn.ghost:hover{border-color:var(--viol);color:var(--ink)}
+.btn.sm{padding:6px 11px;font-size:12.5px;border-radius:8px}
+.btn.icon{padding:6px 9px;font-size:13px;line-height:1;background:var(--panel2);border:1px solid var(--line);color:var(--ink-dim)}
+.btn.icon:hover{border-color:var(--viol);color:var(--ink)}
+.btn.danger{background:transparent;border:1px solid #6B2338;color:var(--bad)}
+.btn.danger:hover{background:var(--bad-bg)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.spread{justify-content:space-between}
+
+/* ---------- Tables ---------- */
+table.data{width:100%;border-collapse:collapse;font-size:13px}
+table.data th{text-align:left;color:var(--ink-faint);font-weight:600;font-size:11.5px;letter-spacing:.4px;text-transform:uppercase;padding:8px 10px;border-bottom:1px solid var(--line)}
+table.data td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+table.data tr:hover td{background:var(--panel2)}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:999px}
+.pill.green{color:var(--ok);background:var(--ok-bg)}
+.pill.amber{color:var(--warn);background:var(--warn-bg)}
+.pill.red{color:var(--bad);background:var(--bad-bg)}
+.pill.viol{color:var(--viol);background:#2A1F4D}
+.mono{font-family:var(--mono)}
+.dim{color:var(--ink-dim)}
+.faint{color:var(--ink-faint)}
+.empty{text-align:center;color:var(--ink-faint);padding:40px 20px;font-size:14px}
+.empty .big{font-size:34px;opacity:.5;margin-bottom:8px}
+
+/* ---------- Validation workspace ---------- */
+.ws{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:18px;align-items:start}
+@media(max-width:900px){.ws{grid-template-columns:1fr}}
+.photo-panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px;position:sticky;top:120px}
+.photo-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.photo-tabs button{background:var(--panel2);border:1px solid var(--line);color:var(--ink-dim);border-radius:8px;padding:5px 10px;font-size:12px;font-weight:600}
+.photo-tabs button.on{background:var(--viol-deep);color:#fff;border-color:var(--viol-deep)}
+.photo-stage{position:relative;background:#0C0814;border-radius:10px;overflow:hidden;height:440px;display:grid;place-items:center}
+.photo-stage img{max-width:100%;max-height:100%;transition:transform .1s;transform-origin:center;cursor:grab;user-select:none}
+.photo-stage.zoomed img{cursor:grab}
+.zoom-ctl{position:absolute;bottom:10px;right:10px;display:flex;gap:6px}
+.zoom-ctl button{background:rgba(20,15,31,.85);border:1px solid var(--line2);color:var(--ink);width:32px;height:32px;border-radius:8px;font-size:16px;font-weight:700}
+.photo-meta{margin-top:8px;font-size:11.5px;color:var(--ink-faint);display:flex;gap:12px;flex-wrap:wrap}
+
+.val-panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px}
+.fieldrow{display:grid;grid-template-columns:96px 1fr;gap:10px;align-items:center;margin-bottom:9px}
+.fieldrow label{font-size:12px;color:var(--ink-faint);font-weight:600}
+.fieldrow input,.fieldrow select{width:100%;background:var(--bg2);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px 10px;font-size:13.5px}
+.fieldrow input:focus,.fieldrow select:focus{outline:none;border-color:var(--viol)}
+.fieldrow .hint{grid-column:2;font-size:11px;color:var(--warn);margin-top:-4px}
+.norm-flag{font-size:11px;color:var(--mag);font-weight:700}
+
+.count-strip{display:flex;gap:8px;margin:14px 0;padding:12px;border-radius:10px;background:var(--bg2);border:1px solid var(--line)}
+.count-box{flex:1;text-align:center}
+.count-box .n{font-family:var(--mono);font-size:22px;font-weight:700;line-height:1.1}
+.count-box .l{font-size:10.5px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+.count-box input{width:60px;text-align:center;background:var(--panel2);border:1px solid var(--line2);color:var(--ink);border-radius:6px;padding:3px;font-family:var(--mono);font-size:18px}
+
+.inci-head{display:flex;justify-content:space-between;align-items:center;margin:8px 0 6px}
+.inci-head b{font-size:13px}
+.inci-list{list-style:none;margin:0;padding:0;max-height:none}
+.ing{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;margin-bottom:5px;background:var(--bg2)}
+.ing.changed{border-color:var(--mag);background:#241640}
+.ing .pos{font-family:var(--mono);font-size:12px;color:var(--ink-faint);width:24px;text-align:right;flex:none}
+.ing input.name{flex:1;min-width:0;background:transparent;border:none;color:var(--ink);font-family:var(--mono);font-size:13px;padding:3px 4px;border-radius:5px}
+.ing input.name:focus{outline:none;background:var(--panel2)}
+.ing .chips{display:flex;gap:4px;flex:none}
+.chip{font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:5px;white-space:nowrap}
+.chip.alg{color:#C4B5FD;background:#2A1F4D}
+.chip.reg{color:var(--warn);background:var(--warn-bg);cursor:help}
+.ing .ops{display:flex;gap:3px;flex:none}
+.ing .ops button{background:var(--panel2);border:1px solid var(--line);color:var(--ink-faint);width:24px;height:24px;border-radius:6px;font-size:12px;line-height:1;padding:0}
+.ing .ops button:hover{border-color:var(--viol);color:var(--ink)}
+.ing .ops button.del:hover{border-color:var(--bad);color:var(--bad)}
+
+.alert-strip{margin:12px 0;padding:10px 12px;border-radius:10px;background:var(--warn-bg);border:1px solid #5A4410;font-size:12.5px;color:#F6D77A}
+.alert-strip b{color:var(--warn)}
+.seal-bar{display:flex;gap:10px;align-items:center;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+
+/* ---------- Modal ---------- */
+.modal-bg{position:fixed;inset:0;background:rgba(8,5,14,.72);display:none;place-items:center;z-index:60;padding:20px}
+.modal-bg.on{display:grid}
+.modal{background:var(--panel);border:1px solid var(--line2);border-radius:var(--r-lg);max-width:560px;width:100%;padding:22px;max-height:88vh;overflow:auto}
+.modal h3{margin:.1em 0 .5em;font-size:17px}
+.diff-block{font-family:var(--mono);font-size:12.5px;border-radius:8px;padding:10px;margin:8px 0}
+.diff-add{background:var(--ok-bg);color:#8EF0C6}
+.diff-del{background:var(--bad-bg);color:#FBA5B4}
+.diff-move{background:#2A1F4D;color:#C4B5FD}
+.diff-line{padding:2px 0}
+
+/* ---------- KPI ---------- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.kpi .n{font-family:var(--mono);font-size:26px;font-weight:700}
+.kpi .l{font-size:11.5px;color:var(--ink-faint);margin-top:2px}
+.kpi .n.ok{color:var(--ok)} .kpi .n.mag{color:var(--mag)} .kpi .n.warn{color:var(--warn)}
+
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--panel2);border:1px solid var(--line2);color:var(--ink);padding:12px 20px;border-radius:12px;
+  font-size:13.5px;font-weight:600;box-shadow:0 8px 30px rgba(0,0,0,.5);z-index:80;transition:.3s;opacity:0}
+.toast.on{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.ok{border-color:#1E6B4E} .toast.bad{border-color:#6B2338}
+
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.filters input,.filters select{background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px 11px;font-size:13px}
+.filters input{min-width:180px}
+.hidden{display:none!important}
+.note{font-size:12px;color:var(--ink-faint);margin-top:6px}
+details.help{margin-top:10px;font-size:13px;color:var(--ink-dim)}
+details.help summary{cursor:pointer;color:var(--viol);font-weight:600}
+details.help div{padding:8px 0 0}
+</style>
+</head>
+<body>
+
+<header class="app">
+  <div class="logo">iB</div>
+  <div class="brandwrap">
+    <span class="brand">IBISA <small>· Imagen y Belleza Inteligente</small></span>
+    <span class="appname">Sistema INCI · App de pc — inci-lab</span>
+  </div>
+  <div class="build">
+    <span class="seal-pill" id="dbState">·</span>
+    <span class="badge">M1 · <b>v1.0</b> · build 2026.07.03.0600</span>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button data-view="import" class="on">Importar</button>
+  <button data-view="cola">Cola de validación <span class="count" id="cnt-cola">0</span></button>
+  <button data-view="catalogo">Catálogo <span class="count" id="cnt-cat">0</span></button>
+  <button data-view="bitacora">Bitácora <span class="count" id="cnt-bit">0</span></button>
+  <button data-view="respaldo">Respaldo</button>
+</nav>
+
+<main>
+  <!-- ============ IMPORTAR ============ -->
+  <section class="view on" id="view-import">
+    <h2 class="title">Importar lote del celular</h2>
+    <p class="sub">Acepta el <b>envelope de lote</b> <code>{ productos:[…] }</code> de inci-captura (schemaVersion 3) y también un producto suelto. La marca se normaliza al importar; nada entra al catálogo sin tu sello.</p>
+    <div class="drop" id="drop">
+      <div class="big">⬆︎</div>
+      <h3>Suelta aquí el JSON exportado, o haz clic para elegirlo</h3>
+      <p>p. ej. <span class="mono">INCI_export_…_1prod.json</span> (batch del Pozione 10)</p>
+      <input type="file" id="file" accept="application/json,.json" class="hidden">
+    </div>
+    <div id="importResult"></div>
+    <details class="help">
+      <summary>¿Cómo funciona M1?</summary>
+      <div>
+        1) Importas el lote → 2) cada producto entra a la <b>Cola de validación</b> con la marca ya normalizada
+        (<span class="mono">A.V.Y.N.A. → AVYNA</span>) → 3) validas el INCI <b>contra la foto</b>, corriges lo que la IA leyó mal
+        (cada corrección queda en la Bitácora con el build y modelo que la produjeron) → 4) pones tu sello y se guarda
+        aplicando la <b>regla de 3 casos</b>: INCI idéntico se avisa, INCI cambiado guarda v2 con diff, producto nuevo guarda v1.
+        Código y datos van separados: actualizar la app nunca borra tu catálogo.
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ COLA ============ -->
+  <section class="view" id="view-cola">
+    <h2 class="title">Cola de validación</h2>
+    <p class="sub">Productos importados esperando tu sello. Abre cada uno y coteja el INCI contra la foto.</p>
+    <div id="colaList"></div>
+  </section>
+
+  <!-- ============ VALIDACIÓN (workspace) ============ -->
+  <section class="view" id="view-val">
+    <div class="row spread" style="margin-bottom:14px">
+      <button class="btn ghost sm" id="backCola">← Volver a la cola</button>
+      <span class="dim" id="valBreadcrumb"></span>
+    </div>
+    <div class="ws">
+      <div class="photo-panel">
+        <div class="photo-tabs" id="photoTabs"></div>
+        <div class="photo-stage" id="photoStage">
+          <img id="photoImg" alt="foto" draggable="false">
+        </div>
+        <div class="zoom-ctl">
+          <button id="zoomOut">−</button><button id="zoomReset">⤢</button><button id="zoomIn">+</button>
+        </div>
+        <div class="photo-meta" id="photoMeta"></div>
+      </div>
+
+      <div class="val-panel" id="valPanel"><!-- render dinámico --></div>
+    </div>
+  </section>
+
+  <!-- ============ CATALOGO ============ -->
+  <section class="view" id="view-catalogo">
+    <h2 class="title">Catálogo validado</h2>
+    <p class="sub">INCIs con tu sello. Las recapturas de un mismo producto se guardan como versiones con diff (regla AVYNA).</p>
+    <div class="filters">
+      <input type="text" id="fSearch" placeholder="Buscar marca, nombre, ingrediente…">
+      <select id="fMarca"><option value="">Todas las marcas</option></select>
+      <select id="fFamilia"><option value="">Todas las familias</option></select>
+    </div>
+    <div id="catList"></div>
+  </section>
+
+  <!-- ============ BITACORA ============ -->
+  <section class="view" id="view-bitacora">
+    <h2 class="title">Bitácora de correcciones</h2>
+    <p class="sub">Cada diferencia entre lo que leyó la IA y lo que validaste tú, con el build y modelo responsables. Es el tablero de calidad del prompt del celular.</p>
+    <div class="kpis" id="bitKpis"></div>
+    <div id="bitByBuild"></div>
+    <div id="bitList" style="margin-top:16px"></div>
+  </section>
+
+  <!-- ============ RESPALDO ============ -->
+  <section class="view" id="view-respaldo">
+    <h2 class="title">Respaldo y restauración</h2>
+    <p class="sub">Mismo criterio que el celular: exporta todo a JSON; la restauración <b>fusiona sin borrar</b>.</p>
+    <div class="card">
+      <div class="row spread">
+        <div>
+          <b>Exportar catálogo + bitácora</b>
+          <div class="note">Genera un archivo <span class="mono">inci-lab-backup-AAAAMMDD.json</span> (schemaVersion 4).</div>
+        </div>
+        <button class="btn" id="btnExport">Exportar respaldo</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row spread">
+        <div>
+          <b>Restaurar (fusionante)</b>
+          <div class="note">Agrega lo que falte; no reemplaza lo que ya validaste. Los productos con tu sello mandan.</div>
+        </div>
+        <div>
+          <input type="file" id="restoreFile" accept=".json" class="hidden">
+          <button class="btn ghost" id="btnRestore">Elegir respaldo…</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row spread">
+        <div>
+          <b>Zona de datos</b>
+          <div class="note">Borra <u>solo</u> lo que elijas. La app (código) queda intacta.</div>
+        </div>
+        <div class="row">
+          <button class="btn ghost sm" id="btnClearCola">Vaciar cola</button>
+          <button class="btn danger sm" id="btnWipe">Borrar todo</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Modal -->
+<div class="modal-bg" id="modalBg"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* ============================================================
+   INCI Lab · App de pc — Módulo M1 (Almacén + Validación)
+   IBISA · Sistema INCI. Single-file, autocontenido, offline.
+   Principios: código/datos separados · build visible ·
+   migración no destructiva · el sello final lo pone el humano.
+   ============================================================ */
+const APP = { name:"inci-lab", modulo:"M1", version:"v1.0", build:"2026.07.03.0600", schemaVersion:4 };
+
+/* ---------- Diccionarios semilla (capa ligera, no es M2/M3) ---------- */
+// 26 alérgenos de fragancia declarables (criterio UE) — normalizados a minúsculas
+const ALERGENOS = new Set(["amyl cinnamal","amylcinnamyl alcohol","anise alcohol","benzyl alcohol","benzyl benzoate","benzyl cinnamate","benzyl salicylate","cinnamal","cinnamyl alcohol","citral","citronellol","coumarin","eugenol","farnesol","geraniol","hexyl cinnamal","hydroxycitronellal","hydroxyisohexyl 3-cyclohexene carboxaldehyde","isoeugenol","limonene","linalool","methyl 2-octynoate","alpha-isomethyl ionone","butylphenyl methylpropional","evernia prunastri extract","evernia furfuracea extract"]);
+// Alertas regulatorias / estratégicas accionables (contexto AVYNA→ANHELO)
+const ALERTAS = [
+  {re:/imidazolidinyl urea|diazolidinyl urea|dmdm hydantoin|quaternium-15/i, txt:"Liberador de formaldehído — riesgo regulatorio; candidato a eliminar"},
+  {re:/polyamide-?2/i, txt:"Microplástico — candidato a eliminar (presión regulatoria)"},
+  {re:/cyclopentasiloxane|cyclomethicone/i, txt:"Silicona volátil (D5) — sustituir por Dimethicone 350cst"},
+  {re:/^ammonium lauryl sulfate$/i, txt:"ALS — sustituir por SLES 70% (costo/desempeño)"},
+  {re:/methylisothiazolinone|methylchloroisothiazolinone/i, txt:"Conservador sensibilizante (MI/MCI) — vigilar límite de uso"},
+  {re:/triethanolamine/i, txt:"TEA — vigilar posible formación de nitrosaminas"}
+];
+function alertFor(name){ const m=ALERTAS.find(a=>a.re.test(name.trim())); return m?m.txt:null; }
+function isAllergen(name){ return ALERGENOS.has(name.trim().toLowerCase()); }
+
+/* ---------- Normalización ---------- */
+function normMarca(raw){
+  if(!raw) return "";
+  let s = String(raw).trim();
+  // "A.V.Y.N.A." -> "AVYNA": si son iniciales punteadas, colapsa
+  if(/^([A-Za-zÁÉÍÓÚÑ]\.){2,}[A-Za-zÁÉÍÓÚÑ]?\.?$/.test(s)){ s = s.replace(/\./g,""); }
+  s = s.replace(/\s+/g," ").trim();
+  return s.toUpperCase();
+}
+function normKey(s){ return String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g," ").trim(); }
+function claveProducto(marcaNorm, nombre){ return normKey(marcaNorm)+"|"+normKey(nombre); }
+
+/* ---------- IndexedDB (migración aditiva, no destructiva) ---------- */
+const DB = (()=>{ 
+  const NAME="ibisa_inci_lab", VER=4;
+  let db=null;
+  function open(){
+    return new Promise((res,rej)=>{
+      const rq=indexedDB.open(NAME,VER);
+      rq.onupgradeneeded=e=>{
+        const d=e.target.result;
+        // Aditivo: crea lo que falte, nunca borra lo existente.
+        if(!d.objectStoreNames.contains("productos")) d.createObjectStore("productos",{keyPath:"id"});
+        if(!d.objectStoreNames.contains("cola")) d.createObjectStore("cola",{keyPath:"id"});
+        if(!d.objectStoreNames.contains("bitacora")) d.createObjectStore("bitacora",{keyPath:"id",autoIncrement:true});
+        if(!d.objectStoreNames.contains("meta")) d.createObjectStore("meta",{keyPath:"k"});
+        // Sembradas vacías para M5a/M5b/M6/M7 (evita re-migrar después)
+        ["formulas","cotizaciones","benchmarks","feedbackCampo"].forEach(s=>{ if(!d.objectStoreNames.contains(s)) d.createObjectStore(s,{keyPath:"id"}); });
+      };
+      rq.onsuccess=e=>{ db=e.target.result; res(db); };
+      rq.onerror=e=>rej(e.target.error);
+    });
+  }
+  function tx(store,mode="readonly"){ return db.transaction(store,mode).objectStore(store); }
+  function all(store){ return new Promise((res,rej)=>{ const r=tx(store).getAll(); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+  function put(store,val){ return new Promise((res,rej)=>{ const r=tx(store,"readwrite").put(val); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+  function del(store,key){ return new Promise((res,rej)=>{ const r=tx(store,"readwrite").delete(key); r.onsuccess=()=>res(); r.onerror=()=>rej(r.error); }); }
+  function clear(store){ return new Promise((res,rej)=>{ const r=tx(store,"readwrite").clear(); r.onsuccess=()=>res(); r.onerror=()=>rej(r.error); }); }
+  return {open,all,put,del,clear};
+})();
+
+/* ---------- Estado en memoria ---------- */
+const S = { cola:[], productos:[], bitacora:[], edit:null, photoIdx:0, zoom:1, pan:{x:0,y:0} };
+
+/* ---------- Utilidades UI ---------- */
+const $ = s=>document.querySelector(s);
+const $$ = s=>[...document.querySelectorAll(s)];
+const esc = s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function toast(msg,kind){ const t=$("#toast"); t.textContent=msg; t.className="toast on "+(kind||""); clearTimeout(t._t); t._t=setTimeout(()=>t.className="toast",2600); }
+function modal(html){ $("#modal").innerHTML=html; $("#modalBg").classList.add("on"); }
+function closeModal(){ $("#modalBg").classList.remove("on"); }
+$("#modalBg").addEventListener("click",e=>{ if(e.target.id==="modalBg") closeModal(); });
+
+/* ---------- Navegación ---------- */
+function show(view){
+  $$(".view").forEach(v=>v.classList.remove("on"));
+  $("#view-"+view).classList.add("on");
+  $$("#tabs button").forEach(b=>b.classList.toggle("on", b.dataset.view===view));
+  window.scrollTo(0,0);
+}
+$("#tabs").addEventListener("click",e=>{ const b=e.target.closest("button"); if(b){ show(b.dataset.view); if(b.dataset.view==="catalogo") renderCatalogo(); if(b.dataset.view==="bitacora") renderBitacora(); } });
+
+/* ============================================================
+   IMPORTAR
+   ============================================================ */
+const drop=$("#drop"), fileInput=$("#file");
+drop.addEventListener("click",()=>fileInput.click());
+drop.addEventListener("dragover",e=>{e.preventDefault();drop.classList.add("hot");});
+drop.addEventListener("dragleave",()=>drop.classList.remove("hot"));
+drop.addEventListener("drop",e=>{e.preventDefault();drop.classList.remove("hot"); if(e.dataTransfer.files[0]) readImport(e.dataTransfer.files[0]);});
+fileInput.addEventListener("change",e=>{ if(e.target.files[0]) readImport(e.target.files[0]); });
+
+function readImport(file){
+  const rd=new FileReader();
+  rd.onload=()=>{ try{ handleImport(JSON.parse(rd.result), file.name); } catch(err){ importError("El archivo no es un JSON válido. "+err.message); } };
+  rd.onerror=()=>importError("No se pudo leer el archivo.");
+  rd.readAsText(file);
+}
+function importError(msg){ $("#importResult").innerHTML=`<div class="card" style="border-color:#6B2338"><span class="pill red">Error</span> ${esc(msg)}</div>`; }
+
+async function handleImport(data, fname){
+  // Acepta envelope de lote {productos:[...]} o producto suelto
+  let productos=[], meta={};
+  if(data && Array.isArray(data.productos)){ productos=data.productos; meta=data; }
+  else if(data && (data.ings || data.inciRaw || data.marca)){ productos=[data]; meta={schemaVersion:data.schemaVersion,appBuild:data.appBuild}; }
+  else { return importError("No encontré ni un envelope de lote ni un producto. Revisa que sea un export de inci-captura."); }
+
+  let nuevos=0, dup=0;
+  const existentesIds=new Set(S.cola.map(c=>c.origenId));
+  for(const p of productos){
+    const item=toColaItem(p, meta);
+    if(existentesIds.has(item.origenId)){ dup++; continue; }
+    S.cola.push(item); await DB.put("cola",item); nuevos++;
+  }
+  refreshCounts();
+  const norm = productos.filter(p=>normMarca(p.marca)!==String(p.marca||"").trim()).length;
+  $("#importResult").innerHTML=`
+    <div class="card">
+      <div class="row spread">
+        <div>
+          <span class="pill green">Importado</span>
+          <b style="margin-left:8px">${nuevos} producto(s)</b> a la cola de validación
+          ${dup?`<span class="dim"> · ${dup} ya estaban en cola (omitidos)</span>`:""}
+        </div>
+        <button class="btn mag" onclick="show('cola');renderCola()">Ir a validar →</button>
+      </div>
+      <div class="note" style="margin-top:8px">
+        Lote <span class="mono">${esc(meta.batchId||"—")}</span> · schemaVersion ${esc(meta.schemaVersion||"?")} ·
+        dispositivo <span class="mono">${esc(meta.dispositivo||"—")}</span>
+        ${norm?` · <span class="norm-flag">${norm} marca(s) normalizada(s)</span>`:""}
+      </div>
+    </div>`;
+  toast(`${nuevos} producto(s) en cola`,"ok");
+}
+
+function toColaItem(p, meta){
+  const marcaCruda = p.marca||"";
+  const marca = normMarca(marcaCruda);
+  const ings = Array.isArray(p.ings)&&p.ings.length ? p.ings.map((x,i)=>({pos:x.pos||i+1,name:x.name||""}))
+             : (p.inciRaw? p.inciRaw.replace(/\.\s*$/,"").split(/\s*,\s*/).map((n,i)=>({pos:i+1,name:n})) : []);
+  return {
+    id:"cola_"+(p.id||Math.random().toString(36).slice(2)),
+    origenId:p.id||null,
+    origen:{ appBuild:(p.source&&p.source.appBuild)||meta.appBuild||"?", modelo:(p.source&&p.source.modelo)||"?", motor:(p.source&&p.source.motor)||"?", dispositivo:p.capturista||meta.dispositivo||"?", escaneadoEn:(p.source&&p.source.escaneadoEn)||null, confianzaIA:p.confianza??null, batchId:meta.batchId||null },
+    // Snapshot íntegro de lo que dijo la IA (para la bitácora / diff)
+    ia:{ marca:marcaCruda, nombre:p.nombre||"", familia:p.familia||"", volumen:p.volumen||"", pais:(p.empresa&&p.empresa.pais)||"", empresa:p.empresa||{}, ings:ings.map(x=>({...x})), conteoIA:p.conteoIA??ings.length, tipoIA:p.tipoIA||"", ean:p.ean||"", claims:p.claims||[], usos:p.usos||"", advertencias:p.advertencias||"" },
+    // Campos de trabajo (editables por el humano) — arrancan con la sugerencia
+    marcaCruda, marca, nombre:p.nombre||"", familia:p.familia||"", volumen:p.volumen||"", pais:(p.empresa&&p.empresa.pais)||"",
+    empresaNombre:(p.empresa&&p.empresa.nombre)||"", empresaDireccion:(p.empresa&&p.empresa.direccion)||"", empresaRol:(p.empresa&&p.empresa.rol)||"",
+    conteoEtiqueta:p.conteoEtiqueta??null, ean:p.ean||"", claims:p.claims||[], usos:p.usos||"", precioObservado:p.precioObservado??null, puntoVenta:p.puntoVenta||"",
+    ings:ings.map(x=>({...x})),
+    fotos:(p.fotos||[]).map(f=>({id:f.id,label:f.label,dataURL:f.dataURL,thumb:f.thumb,w:f.w,h:f.h,quality:f.quality})),
+    curvo:!!p.curvo, completeness:p.completeness||null
+  };
+}
+
+/* ============================================================
+   COLA
+   ============================================================ */
+function renderCola(){
+  const c=$("#colaList");
+  if(!S.cola.length){ c.innerHTML=`<div class="empty"><div class="big">✓</div>Cola vacía. Importa un lote para empezar.</div>`; return; }
+  c.innerHTML=`<table class="data"><thead><tr><th>Marca</th><th>Producto</th><th>Ingredientes</th><th>Conteo</th><th>Confianza IA</th><th></th></tr></thead><tbody>${
+    S.cola.map(it=>{
+      const semaforo = it.conteoEtiqueta==null ? `<span class="pill amber">sin conteo</span>`
+        : (Number(it.conteoEtiqueta)===it.ings.length? `<span class="pill green">${it.ings.length}/${it.conteoEtiqueta}</span>` : `<span class="pill red">${it.ings.length}/${it.conteoEtiqueta}</span>`);
+      const conf = it.origen.confianzaIA!=null? `<span class="pill ${it.origen.confianzaIA>=90?'green':it.origen.confianzaIA>=75?'amber':'red'}">${it.origen.confianzaIA}%</span>`:"—";
+      const nrm = it.marcaCruda && normMarca(it.marcaCruda)!==String(it.marcaCruda).trim() ? `<span class="norm-flag" title="marca cruda: ${esc(it.marcaCruda)}"> ⟲</span>`:"";
+      return `<tr>
+        <td><b>${esc(it.marca||"—")}</b>${nrm}</td>
+        <td>${esc(it.nombre||"—")}<div class="faint" style="font-size:11px">${esc(it.familia||"")}</div></td>
+        <td class="mono">${it.ings.length}</td>
+        <td>${semaforo}</td>
+        <td>${conf}</td>
+        <td><button class="btn mag sm" data-open="${esc(it.id)}">Validar →</button></td>
+      </tr>`;
+    }).join("")
+  }</tbody></table>`;
+  c.querySelectorAll("[data-open]").forEach(b=>b.addEventListener("click",()=>openValidation(b.dataset.open)));
+}
+
+/* ============================================================
+   VALIDACIÓN (workspace foto ↔ INCI)
+   ============================================================ */
+$("#backCola").addEventListener("click",()=>{ show("cola"); renderCola(); });
+
+function openValidation(colaId){
+  const it=S.cola.find(x=>x.id===colaId); if(!it) return;
+  // clon de trabajo
+  S.edit=JSON.parse(JSON.stringify(it));
+  S.photoIdx = Math.max(0, it.fotos.findIndex(f=>f.label==="INCI"));
+  S.zoom=1; S.pan={x:0,y:0};
+  show("val");
+  $("#valBreadcrumb").textContent = `${it.marca||"—"} · ${it.nombre||"—"}`;
+  renderPhotos(); renderValPanel();
+}
+
+function renderPhotos(){
+  const it=S.edit; const tabs=$("#photoTabs");
+  if(!it.fotos.length){ tabs.innerHTML=`<span class="faint">Sin fotos en este producto.</span>`; $("#photoImg").src=""; $("#photoMeta").textContent=""; return; }
+  tabs.innerHTML=it.fotos.map((f,i)=>`<button class="${i===S.photoIdx?'on':''}" data-ph="${i}">${esc(f.label||("Foto "+(i+1)))}</button>`).join("");
+  tabs.querySelectorAll("[data-ph]").forEach(b=>b.addEventListener("click",()=>{ S.photoIdx=+b.dataset.ph; S.zoom=1;S.pan={x:0,y:0}; renderPhotos(); }));
+  const f=it.fotos[S.photoIdx];
+  const img=$("#photoImg"); img.src=f.dataURL||f.thumb||""; applyZoom();
+  const q=f.quality||{};
+  $("#photoMeta").innerHTML=`<span>${f.w||"?"}×${f.h||"?"}px</span>${q.nitidez!=null?`<span>nitidez ${q.nitidez}</span>`:""}${q.brillo!=null?`<span>brillo ${q.brillo}</span>`:""}${it.curvo?`<span class="pill viol">envase curvo</span>`:""}`;
+}
+function applyZoom(){ const img=$("#photoImg"); img.style.transform=`translate(${S.pan.x}px,${S.pan.y}px) scale(${S.zoom})`; $("#photoStage").classList.toggle("zoomed",S.zoom>1); }
+$("#zoomIn").addEventListener("click",()=>{S.zoom=Math.min(6,S.zoom+.4);applyZoom();});
+$("#zoomOut").addEventListener("click",()=>{S.zoom=Math.max(1,S.zoom-.4);if(S.zoom===1)S.pan={x:0,y:0};applyZoom();});
+$("#zoomReset").addEventListener("click",()=>{S.zoom=1;S.pan={x:0,y:0};applyZoom();});
+(function(){ // pan
+  const st=$("#photoStage"); let drag=false,sx,sy;
+  st.addEventListener("mousedown",e=>{ if(S.zoom<=1)return; drag=true;sx=e.clientX-S.pan.x;sy=e.clientY-S.pan.y; });
+  window.addEventListener("mousemove",e=>{ if(!drag)return; S.pan.x=e.clientX-sx;S.pan.y=e.clientY-sy;applyZoom(); });
+  window.addEventListener("mouseup",()=>drag=false);
+  st.addEventListener("wheel",e=>{ e.preventDefault(); S.zoom=Math.min(6,Math.max(1,S.zoom+(e.deltaY<0?.3:-.3))); if(S.zoom===1)S.pan={x:0,y:0}; applyZoom(); },{passive:false});
+})();
+
+function renderValPanel(){
+  const it=S.edit;
+  const alertas = collectAlertas(it.ings);
+  const nCount=it.ings.length;
+  const cE=it.conteoEtiqueta, conteoIA=it.ia.conteoIA;
+  const semClass = cE==null?"amber":(Number(cE)===nCount?"green":"red");
+  const marcaNorm = normMarca(it.marcaCruda);
+  const marcaFlag = it.marcaCruda && marcaNorm!==String(it.marcaCruda).trim();
+
+  $("#valPanel").innerHTML=`
+    <div class="row spread" style="margin-bottom:6px"><b>Datos del producto</b>
+      <span class="faint mono" style="font-size:11px">build ${esc(it.origen.appBuild)} · ${esc(it.origen.modelo)}</span></div>
+
+    <div class="fieldrow"><label>Marca</label><input id="e_marca" value="${esc(it.marca)}"></div>
+    ${marcaFlag?`<div class="fieldrow"><label></label><span class="norm-flag">normalizada desde “${esc(it.marcaCruda)}”</span></div>`:""}
+    <div class="fieldrow"><label>Nombre</label><input id="e_nombre" value="${esc(it.nombre)}"></div>
+    <div class="fieldrow"><label>Familia</label><input id="e_familia" value="${esc(it.familia)}"></div>
+    <div class="fieldrow"><label>Volumen</label><input id="e_volumen" value="${esc(it.volumen)}"></div>
+    <div class="fieldrow"><label>País fab.</label><input id="e_pais" value="${esc(it.pais)}"></div>
+    <div class="fieldrow"><label>Empresa</label><input id="e_empresa" value="${esc(it.empresaNombre)}" placeholder="${it.empresaNombre?'':'vacío — falta foto Empresa'}"></div>
+    <div class="fieldrow"><label>EAN</label><input id="e_ean" value="${esc(it.ean)}"></div>
+
+    <div class="count-strip">
+      <div class="count-box"><div class="l">Etiqueta (tú)</div><input id="e_conteo" type="number" min="0" value="${cE==null?'':esc(cE)}" placeholder="—"></div>
+      <div class="count-box"><div class="n dim">${conteoIA}</div><div class="l">Conteo IA</div></div>
+      <div class="count-box"><div class="n ${semClass==='green'?'':''}" style="color:var(--${semClass==='green'?'ok':semClass==='red'?'bad':'warn'})">${nCount}</div><div class="l">Validado</div></div>
+    </div>
+    ${cE!=null && Number(cE)!==nCount ? `<div class="alert-strip"><b>Semáforo rojo:</b> tu conteo (${esc(cE)}) no coincide con la lista validada (${nCount}). Coteja contra la foto INCI antes de sellar.</div>`:""}
+    ${cE==null ? `<div class="note">Sin conteo de control: el semáforo trabaja a ciegas. Si lo tienes a la mano, captúralo arriba.</div>`:""}
+
+    ${alertas.reg.length?`<div class="alert-strip"><b>⚠ Alertas regulatorias/estratégicas (${alertas.reg.length}):</b> ${alertas.reg.map(a=>esc(a)).join(" · ")}<div class="note" style="color:#C9A54A;margin-top:4px">Vista rápida M1 — el análisis completo vive en M3/M5a.</div></div>`:""}
+
+    <div class="inci-head"><b>INCI — validación contra foto</b>
+      <span class="faint" style="font-size:11.5px">${alertas.alg} alérgeno(s) de fragancia · pos = concentración</span></div>
+    <ul class="inci-list" id="inciList"></ul>
+    <div class="row" style="margin-top:8px"><button class="btn ghost sm" id="addIng">+ Agregar ingrediente</button>
+      <span class="faint" style="font-size:11.5px">Editar nombre · ↑↓ reordenar · ✕ quitar. Cada cambio queda en la Bitácora.</span></div>
+
+    <div class="seal-bar">
+      <button class="btn mag" id="btnSeal">✓ Poner mi sello y guardar</button>
+      <button class="btn ghost" id="btnDiscard">Descartar de la cola</button>
+    </div>`;
+
+  renderIngs();
+  // listeners de campos
+  [["e_marca","marca"],["e_nombre","nombre"],["e_familia","familia"],["e_volumen","volumen"],["e_pais","pais"],["e_empresa","empresaNombre"],["e_ean","ean"]].forEach(([id,k])=>{
+    $("#"+id).addEventListener("input",e=>{ it[k]=e.target.value; });
+  });
+  $("#e_conteo").addEventListener("input",e=>{ it.conteoEtiqueta = e.target.value===""?null:Number(e.target.value); renderValPanel(); });
+  $("#addIng").addEventListener("click",()=>{ it.ings.push({pos:it.ings.length+1,name:""}); reposition(); renderIngs(); });
+  $("#btnSeal").addEventListener("click",sealAndSave);
+  $("#btnDiscard").addEventListener("click",discardCurrent);
+}
+
+function collectAlertas(ings){
+  const reg=[]; let alg=0;
+  ings.forEach(x=>{ const a=alertFor(x.name); if(a && !reg.includes(a)) reg.push(a); if(isAllergen(x.name)) alg++; });
+  return {reg,alg};
+}
+function reposition(){ S.edit.ings.forEach((x,i)=>x.pos=i+1); }
+
+function renderIngs(){
+  const it=S.edit, ul=$("#inciList");
+  ul.innerHTML=it.ings.map((x,i)=>{
+    const orig=it.ia.ings[i]; const changed = !orig || normKey(orig.name)!==normKey(x.name);
+    const alg=isAllergen(x.name), alert=alertFor(x.name);
+    return `<li class="ing ${changed?'changed':''}" data-i="${i}">
+      <span class="pos">${x.pos}</span>
+      <input class="name" value="${esc(x.name)}" data-i="${i}">
+      <span class="chips">${alg?`<span class="chip alg">alérgeno</span>`:""}${alert?`<span class="chip reg" title="${esc(alert)}">⚠</span>`:""}</span>
+      <span class="ops">
+        <button data-up="${i}" title="subir">↑</button>
+        <button data-down="${i}" title="bajar">↓</button>
+        <button class="del" data-del="${i}" title="quitar">✕</button>
+      </span></li>`;
+  }).join("");
+  ul.querySelectorAll("input.name").forEach(inp=>inp.addEventListener("input",e=>{ S.edit.ings[+e.target.dataset.i].name=e.target.value; }));
+  ul.querySelectorAll("input.name").forEach(inp=>inp.addEventListener("blur",()=>renderIngs()));
+  ul.querySelectorAll("[data-up]").forEach(b=>b.addEventListener("click",()=>move(+b.dataset.up,-1)));
+  ul.querySelectorAll("[data-down]").forEach(b=>b.addEventListener("click",()=>move(+b.dataset.down,1)));
+  ul.querySelectorAll("[data-del]").forEach(b=>b.addEventListener("click",()=>{ S.edit.ings.splice(+b.dataset.del,1); reposition(); renderIngs(); }));
+}
+function move(i,dir){ const a=S.edit.ings, j=i+dir; if(j<0||j>=a.length)return; [a[i],a[j]]=[a[j],a[i]]; reposition(); renderIngs(); }
+
+/* ---------- Diff de INCI ---------- */
+function diffINCI(oldIngs,newIngs){
+  const o=oldIngs.map(x=>normKey(x.name)), n=newIngs.map(x=>normKey(x.name));
+  const oSet=new Set(o), nSet=new Set(n);
+  const agregados=newIngs.filter(x=>!oSet.has(normKey(x.name))).map(x=>x.name);
+  const quitados=oldIngs.filter(x=>!nSet.has(normKey(x.name))).map(x=>x.name);
+  const reordenados=[];
+  newIngs.forEach((x,i)=>{ const oi=o.indexOf(normKey(x.name)); if(oi>=0 && oi!==i) reordenados.push({name:x.name,de:oi+1,a:i+1}); });
+  const identico = agregados.length===0 && quitados.length===0 && reordenados.length===0;
+  return {agregados,quitados,reordenados,identico};
+}
+
+/* ---------- Bitácora: correcciones IA vs humano ---------- */
+function buildCorrecciones(it){
+  const c=[]; const ia=it.ia;
+  const meta={appBuild:it.origen.appBuild,modelo:it.origen.modelo,productoNombre:it.nombre,marca:it.marca,ts:new Date().toISOString(),origenId:it.origenId,batchId:it.origen.batchId};
+  if(normKey(ia.marca)!==normKey(it.marca)) c.push({...meta,campo:"marca",valorIA:ia.marca,valorHumano:it.marca});
+  if(normKey(ia.nombre)!==normKey(it.nombre)) c.push({...meta,campo:"nombre",valorIA:ia.nombre,valorHumano:it.nombre});
+  if(String(ia.pais||"")!==String(it.pais||"") ) c.push({...meta,campo:"pais",valorIA:ia.pais,valorHumano:it.pais});
+  // INCI: diff posicional
+  const d=diffINCI(ia.ings,it.ings);
+  d.agregados.forEach(n=>c.push({...meta,campo:"ing:agregado",valorIA:"(faltaba)",valorHumano:n}));
+  d.quitados.forEach(n=>c.push({...meta,campo:"ing:quitado",valorIA:n,valorHumano:"(sobraba)"}));
+  d.reordenados.forEach(r=>c.push({...meta,campo:"ing:orden",valorIA:`pos ${r.de}`,valorHumano:`pos ${r.a} (${r.name})`}));
+  // correcciones de nombre en misma posición
+  const min=Math.min(ia.ings.length,it.ings.length);
+  for(let i=0;i<min;i++){ const a=ia.ings[i], b=it.ings[i];
+    if(a && b && normKey(a.name)===normKey(a.name) && a.name!==b.name && normKey(a.name)!==normKey(b.name) && !d.agregados.includes(b.name) && !d.quitados.includes(a.name)){
+      c.push({...meta,campo:`ing:nombre#${i+1}`,valorIA:a.name,valorHumano:b.name});
+    }
+  }
+  return c;
+}
+
+/* ---------- Sellar y guardar (regla de 3 casos) ---------- */
+async function sealAndSave(){
+  const it=S.edit;
+  reposition();
+  it.ings=it.ings.filter(x=>x.name.trim()!=="");
+  if(!it.marca.trim()||!it.nombre.trim()){ toast("Marca y nombre son obligatorios para sellar","bad"); return; }
+  if(!it.ings.length){ toast("El INCI no puede quedar vacío","bad"); return; }
+
+  const clave=claveProducto(normMarca(it.marca), it.nombre);
+  const versiones=S.productos.filter(p=>p.claveProducto===clave).sort((a,b)=>b.version-a.version);
+  const previa=versiones[0]||null;
+
+  if(previa){
+    const d=diffINCI(previa.ings,it.ings);
+    if(d.identico){
+      modal(`<h3>INCI idéntico</h3>
+        <p class="dim">Ya tienes <b>${esc(it.marca)} · ${esc(it.nombre)}</b> (v${previa.version}) con exactamente el mismo INCI. La regla de 3 casos sugiere <b>descartar</b> para no duplicar.</p>
+        <div class="row" style="margin-top:14px">
+          <button class="btn ghost" onclick="closeModal();discardCurrent()">Descartar (recomendado)</button>
+          <button class="btn" id="mForce">Guardar de todas formas</button>
+        </div>`);
+      $("#mForce").addEventListener("click",()=>{ closeModal(); commitSave(clave,previa,d); });
+      return;
+    }
+    // INCI cambiado → nueva versión con diff
+    modal(`<h3>INCI cambiado — se guardará v${previa.version+1}</h3>
+      <p class="dim">Diferencias contra la v${previa.version} de <b>${esc(it.marca)} · ${esc(it.nombre)}</b>:</p>
+      ${renderDiffBlock(d)}
+      <div class="row" style="margin-top:14px">
+        <button class="btn ghost" onclick="closeModal()">Cancelar</button>
+        <button class="btn mag" id="mVer">Sellar v${previa.version+1} con diff</button>
+      </div>`);
+    $("#mVer").addEventListener("click",()=>{ closeModal(); commitSave(clave,previa,d); });
+    return;
+  }
+  // Producto nuevo (otras marcas o primera captura) → v1
+  commitSave(clave,null,null);
+}
+
+function renderDiffBlock(d){
+  let h="";
+  if(d.agregados.length) h+=`<div class="diff-block diff-add">${d.agregados.map(x=>`<div class="diff-line">+ ${esc(x)}</div>`).join("")}</div>`;
+  if(d.quitados.length) h+=`<div class="diff-block diff-del">${d.quitados.map(x=>`<div class="diff-line">− ${esc(x)}</div>`).join("")}</div>`;
+  if(d.reordenados.length) h+=`<div class="diff-block diff-move">${d.reordenados.map(r=>`<div class="diff-line">⇄ ${esc(r.name)}: ${r.de} → ${r.a}</div>`).join("")}</div>`;
+  return h||`<p class="faint">Sin cambios estructurales.</p>`;
+}
+
+async function commitSave(clave,previa,diff){
+  const it=S.edit;
+  const version = previa? previa.version+1 : 1;
+  const now=new Date().toISOString();
+  const registro={
+    id: previa? (previa.claveProducto+"__v"+version) : (it.origenId||("prod_"+Math.random().toString(36).slice(2)))+"__v1",
+    claveProducto:clave, version,
+    marcaCruda:it.marcaCruda, marca:normMarca(it.marca), familia:it.familia, nombre:it.nombre.trim(),
+    volumen:it.volumen, pais:it.pais, empresa:{rol:it.empresaRol,nombre:it.empresaNombre,direccion:it.empresaDireccion,pais:it.pais},
+    conteoEtiqueta:it.conteoEtiqueta, ean:it.ean, claims:it.claims, usos:it.usos,
+    precioObservado:it.precioObservado, puntoVenta:it.puntoVenta,
+    ings:it.ings.map(x=>({pos:x.pos,name:x.name.trim()})),
+    inciRaw:it.ings.map(x=>x.name.trim()).join(", ")+".",
+    selloPor:"Eloy", selladoEn:now,
+    origenCaptura:it.origen, iaOriginal:it.ia,
+    diffVsAnterior: diff && !diff.identico ? diff : null,
+    esAvyna: normMarca(it.marca)==="AVYNA",
+    fotos:it.fotos, schemaVersion:APP.schemaVersion
+  };
+  await DB.put("productos",registro);
+  S.productos=S.productos.filter(p=>p.id!==registro.id); S.productos.push(registro);
+
+  // Bitácora
+  const corr=buildCorrecciones(it);
+  for(const c of corr){ const id=await DB.put("bitacora",c); S.bitacora.push({...c,id}); }
+
+  // Sale de la cola
+  await removeFromCola(S.cola.find(x=>x.origenId===it.origenId||x.id==="cola_"+it.origenId||x.id===("cola_"+(it.origenId||"")))?.id || ("cola_"+(it.origenId||"")));
+  const colaMatch=S.cola.find(x=>JSON.stringify(x.ia.ings)===JSON.stringify(it.ia.ings)&&x.nombre===S.edit.ia.nombre);
+  if(colaMatch) await removeFromCola(colaMatch.id);
+
+  S.edit=null; refreshCounts();
+  toast(`Sellado: ${registro.marca} · ${registro.nombre} (v${version}) · ${corr.length} corrección(es)`,"ok");
+  show("cola"); renderCola();
+}
+async function removeFromCola(id){ if(!id)return; S.cola=S.cola.filter(x=>x.id!==id); try{await DB.del("cola",id);}catch(e){} }
+
+function discardCurrent(){
+  const it=S.edit; if(!it) return;
+  const id = S.cola.find(x=>x.origenId===it.origenId)?.id;
+  removeFromCola(id).then(()=>{ S.edit=null; refreshCounts(); toast("Descartado de la cola"); show("cola"); renderCola(); });
+}
+
+/* ============================================================
+   CATÁLOGO
+   ============================================================ */
+function groupVersions(){
+  const g={};
+  S.productos.forEach(p=>{ (g[p.claveProducto]=g[p.claveProducto]||[]).push(p); });
+  Object.values(g).forEach(arr=>arr.sort((a,b)=>b.version-a.version));
+  return g;
+}
+function renderCatalogo(){
+  // filtros
+  const marcas=[...new Set(S.productos.map(p=>p.marca))].sort();
+  const fams=[...new Set(S.productos.map(p=>p.familia).filter(Boolean))].sort();
+  const fMarca=$("#fMarca"), fFam=$("#fFamilia");
+  fMarca.innerHTML=`<option value="">Todas las marcas</option>`+marcas.map(m=>`<option>${esc(m)}</option>`).join("");
+  fFam.innerHTML=`<option value="">Todas las familias</option>`+fams.map(f=>`<option>${esc(f)}</option>`).join("");
+  drawCatList();
+}
+["fSearch","fMarca","fFamilia"].forEach(id=>document.addEventListener("input",e=>{ if(e.target.id===id) drawCatList(); }));
+function drawCatList(){
+  const q=normKey($("#fSearch").value), fm=$("#fMarca").value, ff=$("#fFamilia").value;
+  const g=groupVersions();
+  const rows=Object.values(g).map(vs=>vs[0]).filter(p=>{
+    if(fm&&p.marca!==fm) return false;
+    if(ff&&p.familia!==ff) return false;
+    if(q){ const hay=normKey(p.marca+" "+p.nombre+" "+p.ings.map(i=>i.name).join(" ")); if(!hay.includes(q)) return false; }
+    return true;
+  }).sort((a,b)=>a.marca.localeCompare(b.marca)||a.nombre.localeCompare(b.nombre));
+
+  const c=$("#catList");
+  if(!S.productos.length){ c.innerHTML=`<div class="empty"><div class="big">⌘</div>Aún no hay productos sellados. Valida los de la cola.</div>`; return; }
+  if(!rows.length){ c.innerHTML=`<div class="empty">Ningún producto coincide con el filtro.</div>`; return; }
+  c.innerHTML=`<table class="data"><thead><tr><th>Marca</th><th>Producto</th><th>Ing.</th><th>País</th><th>Versiones</th><th>Alertas</th><th></th></tr></thead><tbody>${
+    rows.map(p=>{
+      const vs=g[p.claveProducto]; const al=collectAlertas(p.ings);
+      return `<tr>
+        <td><b>${esc(p.marca)}</b>${p.esAvyna?` <span class="pill viol">AVYNA</span>`:""}</td>
+        <td>${esc(p.nombre)}<div class="faint" style="font-size:11px">${esc(p.familia||"")} · ${esc(p.volumen||"")} </div></td>
+        <td class="mono">${p.ings.length}</td>
+        <td class="dim">${esc(p.pais||"—")}</td>
+        <td>${vs.length>1?`<span class="pill viol">v1–v${vs[0].version} (${vs.length})</span>`:`<span class="dim">v1</span>`}</td>
+        <td>${al.reg.length?`<span class="pill amber">${al.reg.length} ⚠</span>`:`<span class="faint">—</span>`}</td>
+        <td><button class="btn ghost sm" data-detail="${esc(p.claveProducto)}">Ver</button></td>
+      </tr>`;
+    }).join("")
+  }</tbody></table>`;
+  c.querySelectorAll("[data-detail]").forEach(b=>b.addEventListener("click",()=>detailProduct(b.dataset.detail)));
+}
+
+function detailProduct(clave){
+  const vs=groupVersions()[clave]; if(!vs) return; const p=vs[0]; const al=collectAlertas(p.ings);
+  modal(`<h3>${esc(p.marca)} · ${esc(p.nombre)}</h3>
+    <div class="row" style="gap:6px;margin-bottom:8px">
+      <span class="pill viol">v${p.version}</span>
+      <span class="dim" style="font-size:12px">${esc(p.familia||"")} · ${esc(p.volumen||"")} · ${esc(p.pais||"—")} · EAN ${esc(p.ean||"—")}</span>
+    </div>
+    <div class="note">Sellado por ${esc(p.selloPor)} · ${new Date(p.selladoEn).toLocaleString("es-MX")} · origen build ${esc(p.origenCaptura.appBuild)} / ${esc(p.origenCaptura.modelo)}</div>
+    ${al.reg.length?`<div class="alert-strip" style="margin-top:10px"><b>⚠</b> ${al.reg.map(esc).join(" · ")}</div>`:""}
+    <div class="inci-head" style="margin-top:12px"><b>INCI validado (${p.ings.length})</b><span class="faint" style="font-size:11px">${al.alg} alérgeno(s)</span></div>
+    <ol class="mono" style="font-size:12.5px;line-height:1.7;padding-left:22px;margin:4px 0">${p.ings.map(x=>`<li>${esc(x.name)}${isAllergen(x.name)?` <span class="chip alg">alérgeno</span>`:""}${alertFor(x.name)?` <span class="chip reg">⚠</span>`:""}</li>`).join("")}</ol>
+    ${vs.length>1?`<div class="inci-head" style="margin-top:10px"><b>Historial de versiones</b></div>${vs.filter(v=>v.diffVsAnterior).map(v=>`<div class="note" style="margin-top:6px"><b>v${v.version}</b> vs v${v.version-1}:</div>${renderDiffBlock(v.diffVsAnterior)}`).join("")}`:""}
+    <div class="row" style="margin-top:14px"><button class="btn ghost" onclick="closeModal()">Cerrar</button></div>`);
+}
+
+/* ============================================================
+   BITÁCORA
+   ============================================================ */
+function renderBitacora(){
+  const b=S.bitacora;
+  const totalIngs = S.productos.reduce((a,p)=>a+(p.iaOriginal?p.iaOriginal.ings.length:0),0);
+  const errIng = b.filter(x=>x.campo.startsWith("ing")).length;
+  const tasa = totalIngs? (errIng/totalIngs*100):0;
+  $("#bitKpis").innerHTML=`
+    <div class="kpi"><div class="n mag">${b.length}</div><div class="l">Correcciones totales</div></div>
+    <div class="kpi"><div class="n">${S.productos.length}</div><div class="l">Productos sellados</div></div>
+    <div class="kpi"><div class="n ${tasa<5?'ok':tasa<12?'warn':''}" ${tasa>=12?'style="color:var(--bad)"':''}>${tasa.toFixed(1)}%</div><div class="l">Tasa de error de INCI</div></div>
+    <div class="kpi"><div class="n">${errIng}</div><div class="l">Errores de ingrediente</div></div>`;
+
+  // por build/modelo
+  const byBuild={};
+  b.forEach(x=>{ const k=x.appBuild+" · "+x.modelo; (byBuild[k]=byBuild[k]||{marca:0,nombre:0,ing:0,pais:0,total:0}); const g=byBuild[k]; g.total++; if(x.campo.startsWith("ing"))g.ing++; else if(g[x.campo]!=null)g[x.campo]++; });
+  const bb=Object.entries(byBuild);
+  $("#bitByBuild").innerHTML = bb.length? `<div class="card"><b>Errores por build / modelo</b>
+    <table class="data" style="margin-top:8px"><thead><tr><th>Build · modelo</th><th>INCI</th><th>Marca</th><th>Nombre</th><th>País</th><th>Total</th></tr></thead><tbody>
+    ${bb.map(([k,g])=>`<tr><td class="mono" style="font-size:12px">${esc(k)}</td><td>${g.ing}</td><td>${g.marca}</td><td>${g.nombre}</td><td>${g.pais}</td><td><b>${g.total}</b></td></tr>`).join("")}
+    </tbody></table></div>`:"";
+
+  const list=$("#bitList");
+  if(!b.length){ list.innerHTML=`<div class="empty">Sin correcciones aún. Aparecerán al sellar productos.</div>`; return; }
+  list.innerHTML=`<div class="card"><b>Detalle</b>
+    <table class="data" style="margin-top:8px"><thead><tr><th>Producto</th><th>Campo</th><th>IA leyó</th><th>Tú validaste</th><th>Build</th></tr></thead><tbody>
+    ${b.slice().reverse().map(x=>`<tr>
+      <td>${esc(x.marca)} · <span class="dim">${esc(x.productoNombre)}</span></td>
+      <td><span class="pill ${x.campo.startsWith('ing')?'viol':'amber'}">${esc(x.campo)}</span></td>
+      <td class="mono" style="font-size:12px;color:var(--bad)">${esc(x.valorIA)}</td>
+      <td class="mono" style="font-size:12px;color:var(--ok)">${esc(x.valorHumano)}</td>
+      <td class="faint mono" style="font-size:11px">${esc(x.appBuild)}</td>
+    </tr>`).join("")}
+    </tbody></table></div>`;
+}
+
+/* ============================================================
+   RESPALDO
+   ============================================================ */
+$("#btnExport").addEventListener("click",()=>{
+  const payload={ tipo:"inci-lab-backup", schemaVersion:APP.schemaVersion, appBuild:APP.build, exportadoEn:new Date().toISOString(),
+    productos:S.productos, bitacora:S.bitacora };
+  const blob=new Blob([JSON.stringify(payload)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download=`inci-lab-backup-${new Date().toISOString().slice(0,10).replace(/-/g,"")}.json`; a.click();
+  toast("Respaldo exportado","ok");
+});
+$("#btnRestore").addEventListener("click",()=>$("#restoreFile").click());
+$("#restoreFile").addEventListener("change",e=>{ const f=e.target.files[0]; if(!f)return; const rd=new FileReader();
+  rd.onload=async()=>{ try{
+    const d=JSON.parse(rd.result); let add=0;
+    if(Array.isArray(d.productos)) for(const p of d.productos){ if(!S.productos.find(x=>x.id===p.id)){ await DB.put("productos",p); S.productos.push(p); add++; } }
+    if(Array.isArray(d.bitacora)) for(const c of d.bitacora){ await DB.put("bitacora",c); S.bitacora.push(c); }
+    refreshCounts(); renderCatalogo(); toast(`Restaurado (fusión): +${add} producto(s)`,"ok");
+  }catch(err){ toast("Respaldo inválido","bad"); } };
+  rd.readAsText(f); e.target.value="";
+});
+$("#btnClearCola").addEventListener("click",async()=>{ if(!confirm("¿Vaciar la cola de validación? (no afecta el catálogo)"))return; await DB.clear("cola"); S.cola=[]; refreshCounts(); renderCola(); toast("Cola vaciada"); });
+$("#btnWipe").addEventListener("click",async()=>{ if(!confirm("Borrar TODO: catálogo, cola y bitácora. ¿Seguro?"))return; if(!confirm("Esto no se puede deshacer. Confirma de nuevo."))return; await Promise.all(["productos","cola","bitacora"].map(s=>DB.clear(s))); S.productos=[];S.cola=[];S.bitacora=[]; refreshCounts(); renderCola();renderCatalogo();renderBitacora(); toast("Datos borrados"); });
+
+/* ============================================================
+   Counts + arranque
+   ============================================================ */
+function refreshCounts(){
+  $("#cnt-cola").textContent=S.cola.length;
+  $("#cnt-cat").textContent=Object.keys(groupVersions()).length;
+  $("#cnt-bit").textContent=S.bitacora.length;
+}
+async function boot(){
+  try{
+    await DB.open();
+    S.cola=await DB.all("cola"); S.productos=await DB.all("productos"); S.bitacora=await DB.all("bitacora");
+    $("#dbState").innerHTML=`<span style="color:#1E9E6A">●</span> datos locales`;
+  }catch(e){
+    $("#dbState").innerHTML=`<span style="color:#C0392B">●</span> memoria (sin persistencia)`;
+    console.warn("IndexedDB no disponible:",e);
+    toast("Sin persistencia: usa un servidor local o Chrome para guardar entre sesiones","bad");
+  }
+  refreshCounts(); renderCola();
+}
+window.show=show; window.closeModal=closeModal; window.discardCurrent=discardCurrent; window.renderCola=renderCola;
+boot();
+</script>
+</body>
+</html>
